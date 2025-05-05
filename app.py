@@ -95,7 +95,7 @@ with nav2:
 with nav3:
     st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
 
-st.markdown("</div>", unsafe_allow_html=True)    st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
+st.markdown("</div>", unsafe_allow_html=True)
     
 
 current_page = st.session_state.current_page
