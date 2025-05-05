@@ -99,13 +99,11 @@ with nav3:
     st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
 
 st.markdown("</div>", unsafe_allow_html=True)
-    
 
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
 
 # Reset button
-
 
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 editable_weeks = page_weeks
@@ -123,7 +121,6 @@ base_date = st.session_state.start_date
 
 if not base_date:
     st.info("📅 Dates will appear once you complete your first workout.")
-
 
 # --- Inject global CSS ---
 st.markdown("""
@@ -168,6 +165,38 @@ div[data-testid="stButton"] button {
     z-index: 10;
     border-bottom: 1px solid #e0e0e0;
 }
+
+/* Enhanced styling for workout and rest days */
+.calendar-button {
+    border: 2px solid transparent; /* Default border */
+}
+
+.workout-day {
+    background-color: #007bff !important; /* Blue for workout days */
+    border: 2px solid #0056b3 !important; /* Bold blue border */
+    font-weight: bold !important;
+}
+
+.workout-day span {
+    color: white !important;
+}
+
+.rest-day {
+    background-color: #f8f9fa !important; /* Light gray for rest days */
+    border: 2px solid #dee2e6 !important; /* Subtle gray border */
+}
+
+.rest-day span {
+    color: #6c757d !important; /* Darker gray text */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .calendar-button {
+        width: 100px !important;
+        height: 70px !important;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -195,17 +224,23 @@ for week_index, w in enumerate(editable_weeks):
 
                 if is_completed:
                     color = "#28a745"  # green
+                    button_class = "calendar-button workout-day" if is_workout_day else "calendar-button rest-day"
+                    button_text = f"{d[:3]}\n🏋️ <b>{default_val}</b>\n{date_str}"
                 elif is_today and is_workout_day:
                     color = "#ffc107"  # yellow
+                    button_class = "calendar-button workout-day" if is_workout_day else "calendar-button rest-day"
+                    button_text = f"{d[:3]}\n🏋️ <b>{default_val}</b>\n{date_str}"
                 elif is_workout_day:
                     color = "#007bff"  # blue
+                    button_class = "calendar-button workout-day" if is_workout_day else "calendar-button rest-day"
+                    button_text = f"{d[:3]}\n🏋️ <b>{default_val}</b>\n{date_str}"
                 else:
                     color = "#f8f9fa"  # light gray
+                    button_class = "calendar-button rest-day"
+                    button_text = f"{d[:3]}\n{default_val}\n{date_str}"
 
-                button_text = f"{d[:3]}\n{default_val}\n{date_str}"
-
-                # Wrap button in colored div
-                st.markdown(f"<div style='background-color:{color}; padding:2px; border-radius:8px;'>", unsafe_allow_html=True)
+                # Wrap button in colored div with class for styling
+                st.markdown(f"<div class='{button_class}' style='background-color:{color}; padding:2px; border-radius:8px;'>", unsafe_allow_html=True)
                 if st.button(button_text, key=f"btn_{w}_{d}"):
                     if is_workout_day:
                         st.session_state.selected_workout = default_val
