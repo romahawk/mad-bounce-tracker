@@ -1062,7 +1062,51 @@
       }
     },
     "Week 9": {
-      
+      "Training_9": {
+        "location": "Field",
+        "exercises": {
+          "Warm-Up": [
+            {
+              "name": "Toe Jog",
+              "sets": 2,
+              "reps": "1 min"
+            },
+            {
+              "name": "High Knee Skips",
+              "sets": 2,
+              "reps": "*"
+            }
+          ],
+          
+          "Main": [
+            {
+              "name": "Armless Bounces",
+              "sets": 2,
+              "reps": 25
+            },
+            {
+              "name": "Square Jumps",
+              "sets": 3,
+              "reps": 8
+            },
+            {
+              "name": "1-1-2 Bounding",
+              "sets": 3,
+              "reps": "*"
+            },
+            {
+              "name": "Depth Jumps",
+              "sets": 3,
+              "reps": 12
+            },
+            {
+              "name": "Reverse Depth Jumps",
+              "sets": 3,
+              "reps": 10
+            }
+          ]
+        }
+      }
     },
     "week_10": {
       "Training_9": {
