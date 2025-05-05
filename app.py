@@ -42,8 +42,9 @@ total_workouts = 34
 progress_percent = round((completed / total_workouts) * 100)
 
 # Progress bar with text
-st.markdown(f"""
-<div style='background-color: #f0f4f8; border-radius: 12px; padding: 16px 12px; margin-top: 10px; position: sticky; top: 0; z-index: 10;'>
+st.markdown("""
+<div class='sticky-container'>
+<div style='background-color: #f0f4f8; border-radius: 12px; padding: 16px 12px; margin-top: 10px;'>
   <div style='font-size: 22px; font-weight: 600; color: #2d3436; margin-bottom: 12px;'>🔥 Your Progress</div>
   <div style='background-color: #dfe6e9; height: 36px; width: 100%; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 5px rgba(0,0,0,0.15);'>
     <div style='width: {progress_percent}%; height: 100%; background-color: #00b894; text-align: center;
@@ -98,8 +99,8 @@ with nav2:
 with nav3:
     st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
 
-st.markdown("</div>", unsafe_allow_html=True)
-    
+st.markdown("</div>", unsafe_allow_html=True)  # close sticky-nav
+st.markdown("</div>", unsafe_allow_html=True)  # close sticky-container
 
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
@@ -168,6 +169,19 @@ div[data-testid="stButton"] button {
     z-index: 10;
     border-bottom: 1px solid #e0e0e0;
 }
+
+
+.sticky-container {
+    position: sticky;
+    top: 0;
+    background-color: #ffffff;
+    z-index: 999;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    border-bottom: 1px solid #e0e0e0;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
