@@ -27,7 +27,7 @@ else:
 
 # --- Streamlit UI ---
 st.set_page_config(layout="wide")
-st.title("🌟 Program Progress")
+st.title(":star: Mad Bounce Training rogram Progress")
 
 # Calculate progress
 completed = len(progress)
@@ -56,44 +56,11 @@ if "selected_workout" not in st.session_state:
     st.session_state.selected_workout = None
 if "selected_date_key" not in st.session_state:
     st.session_state.selected_date_key = None
+if "start_date" not in st.session_state:
+    st.session_state.start_date = datetime.date.today()
 
-# --- Workout Detail Viewer ---
-if st.session_state.selected_workout and st.session_state.selected_date_key:
-    workout_name = st.session_state.selected_workout
-    date_key = st.session_state.selected_date_key
-    week = date_key.split("_")[0] + "_" + date_key.split("_")[1]
-    workout_data = program_data["workouts"].get(week, {}).get(workout_name)
-    if workout_data:
-        st.markdown(f"### 🏋️ Workout {workout_name} ({workout_data['location']})")
-        for section, exercises in workout_data["exercises"].items():
-            with st.expander(section):
-                for ex in exercises:
-                    st.markdown(f"**{ex['name']}** - {ex['sets']} sets x {ex['reps']}")
-
-        # Mark completed
-        if st.checkbox("✅ Mark workout as completed", value=date_key in progress):
-            progress[date_key] = True
-        else:
-            progress.pop(date_key, None)
-        with open("progress.json", "w") as f:
-            json.dump(progress, f, indent=2)
-
-        # Notes
-        note_key = f"note_{date_key}"
-        if os.path.exists("notes.json"):
-            with open("notes.json", "r") as f:
-                notes = json.load(f)
-        else:
-            notes = {}
-        note_text = st.text_area("📝 Notes", value=notes.get(note_key, ""))
-        if st.button("💾 Save Notes"):
-            notes[note_key] = note_text
-            with open("notes.json", "w") as f:
-                json.dump(notes, f, indent=2)
-            st.success("Notes saved!")
-
-# --- Workout Viewer ---
-st.subheader("🗓️ Workout Schedule Viewer")
+# --- Editable Calendar ---
+st.subheader(":calendar: Weekly Training Grid Editor")
 
 # Week selection with pagination
 week_keys = [w for w in program_data["workouts"].keys() if w.startswith("week_") and len(w.split('_')) == 2 and w.split('_')[1].isdigit()]
@@ -119,9 +86,6 @@ with col2:
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
 
-# --- Editable Calendar ---
-st.subheader("🗓️ Weekly Training Grid Editor")
-
 # Reset button
 if st.button("🔄 Reset schedule to default"):
     workout_schedule = program_data.get("schedule", {})
@@ -138,29 +102,107 @@ if st.button("🔄 Reset schedule to default"):
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 editable_weeks = page_weeks
 
-for w in editable_weeks:
-    st.markdown(f"**{w}**")
-    cols = st.columns(len(weekdays))
-    workouts_in_week = 0
-    for i, d in enumerate(weekdays):
-        with cols[i]:
-            default_val = workout_schedule.get(w, {}).get(d, "Rest")
-            today = datetime.datetime.now().strftime("%A")
-            highlight = (w == f"week_{datetime.datetime.now().isocalendar()[1]}" and d == today)
-            highlight_completed = f"{w}_{d}" in progress and default_val.startswith("Training")
-            style = "background-color: #90ee90;" if highlight_completed else ("background-color: #ffffcc;" if highlight else "")
-            if st.button(f"{d[:3]}\n{default_val}", key=f"btn-{w}-{d}", help=f"Click to view or mark {default_val}"):
+# Uniform button style
+button_style = """
+display: inline-block;
+padding: 10px;
+font-size: 14px;
+text-align: center;
+width: 100%;
+height: 50px;
+border-radius: 6px;
+border: 1px solid #ccc;
+background-color: #f8f9fa;
+box-shadow: 1px 1px 3px rgba(0,0,0,0.05);
+margin: 4px auto;
+display: flex;
+justify-content: center;
+align-items: center;
+"""
+
+# Compute base date
+base_date = None
+for k in sorted(progress):
+    if k in workout_schedule:
+        continue
+    week, day = k.split("_")[0] + "_" + k.split("_")[1], k.split("_")[2]
+    if week in workout_schedule and workout_schedule[week].get(day, "").startswith("Training"):
+        base_date = datetime.date.today()
+        break
+if not base_date:
+    base_date = datetime.date.today()
+
+# Draw calendar
+for week_index, w in enumerate(editable_weeks):
+    with st.container():
+        st.markdown(f"<div style='padding: 8px 0; font-size: 20px; font-weight: bold; color: #2c3e50;'>{w}</div>", unsafe_allow_html=True)
+        cols = st.columns(len(weekdays))
+        workouts_in_week = 0
+        for i, d in enumerate(weekdays):
+            with cols[i]:
+                default_val = workout_schedule.get(w, {}).get(d, "Rest")
+                day_offset = (week_keys_sorted.index(w) * 7) + i
+                current_date = base_date + datetime.timedelta(days=day_offset)
+                date_str = current_date.strftime("%b %d")
+                today = datetime.datetime.now().strftime("%A")
+                highlight = (w == f"week_{datetime.datetime.now().isocalendar()[1]}" and d == today)
+                highlight_completed = f"{w}_{d}" in progress and default_val.startswith("Training")
+                style = "background-color: #90ee90;" if highlight_completed else ("background-color: #ffffcc;" if highlight else "")
+                btn_label = f"{d[:3]} {default_val}"
+                button_html = f"""
+                <div style='{button_style}{style}'>{btn_label}</div>
+                """
+                if st.button(btn_label, key=f"btn-{w}-{d}", help=f"Click to view or mark {default_val}"):
+                    if default_val.startswith("Training"):
+                        st.session_state.selected_workout = default_val
+                        st.session_state.selected_date_key = f"{w}_{d}"
+                st.markdown(button_html, unsafe_allow_html=True)
+                if w not in workout_schedule:
+                    workout_schedule[w] = {}
+                workout_schedule[w][d] = default_val
                 if default_val.startswith("Training"):
-                    st.session_state.selected_workout = default_val
-                    st.session_state.selected_date_key = f"{w}_{d}"
-                    st.rerun()
-            st.markdown(f"<div style='padding:4px;{style}'></div>", unsafe_allow_html=True)
-            if w not in workout_schedule:
-                workout_schedule[w] = {}
-            workout_schedule[w][d] = default_val
-            if default_val.startswith("Training"):
-                workouts_in_week += 1
-    st.caption(f"📜 Workouts this week: {workouts_in_week}")
+                    workouts_in_week += 1
+        st.caption(f"\U0001f4dc Workouts this week: {workouts_in_week}")
+
+# --- Sidebar Workout Viewer ---
+if st.session_state.selected_workout and st.session_state.selected_date_key:
+    workout_name = st.session_state.selected_workout
+    date_key = st.session_state.selected_date_key
+    week = date_key.split("_")[0] + "_" + date_key.split("_")[1]
+    workout_data = program_data["workouts"].get(week, {}).get(workout_name)
+
+    if workout_data:
+        with st.sidebar:
+            st.markdown(f"<h3 style='margin-bottom: 5px;'>🏋️‍♂️ <span style='font-size:20px;'>Workout {workout_name} ({workout_data['location']})</span></h3>", unsafe_allow_html=True)
+
+            for section, exercises in workout_data["exercises"].items():
+                st.markdown(f"<h4 style='color:#2980b9;'>{section}</h4>", unsafe_allow_html=True)
+                for ex in exercises:
+                    st.markdown(f"<span style='font-weight:bold;'>{ex['name']}</span> - {ex['sets']} sets x {ex['reps']}", unsafe_allow_html=True)
+
+            if st.checkbox("✅ Mark workout as completed", value=date_key in progress):
+                progress[date_key] = True
+            else:
+                progress.pop(date_key, None)
+            with open("progress.json", "w") as f:
+                json.dump(progress, f, indent=2)
+
+            note_key = f"note_{date_key}"
+            if os.path.exists("notes.json"):
+                with open("notes.json", "r") as f:
+                    notes = json.load(f)
+            else:
+                notes = {}
+            note_text = st.text_area("🗒 Notes", value=notes.get(note_key, ""))
+            if st.button("💾 Save Notes"):
+                notes[note_key] = note_text
+                with open("notes.json", "w") as f:
+                    json.dump(notes, f, indent=2)
+                st.success("Notes saved!")
+
+            if st.button("❌ Close Workout"):
+                st.session_state.selected_workout = None
+                st.session_state.selected_date_key = None
 
 # Save updated schedule
 with open("schedule.json", "w") as f:
