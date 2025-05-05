@@ -27,7 +27,7 @@ else:
 
 # --- Streamlit UI ---
 st.set_page_config(layout="wide")
-st.title(":star: Mad Bounce Training rogram Progress")
+st.markdown("<h1 style='font-size: 36px; color: #1e3799;'>🚀 Mad Bounce Vertical Jump Program</h1>", unsafe_allow_html=True)
 
 # Calculate progress
 completed = len(progress)
@@ -35,19 +35,18 @@ total_workouts = 34
 progress_percent = round((completed / total_workouts) * 100)
 
 # Progress bar with text
-st.plotly_chart(go.Figure(go.Bar(
-    x=[completed],
-    orientation='h',
-    marker=dict(color='green'),
-    text=f"{completed} of {total_workouts} ({progress_percent}%)",
-    textposition='outside'
-)).update_layout(
-    xaxis=dict(range=[0, total_workouts], visible=False),
-    yaxis=dict(visible=False),
-    height=60,
-    margin=dict(l=0, r=0, t=0, b=0),
-    showlegend=False
-), use_container_width=True)
+st.markdown(f"""
+<div style='background-color: #f0f4f8; border-radius: 12px; padding: 25px 20px; margin-top: 10px;'>
+  <div style='font-size: 22px; font-weight: 600; color: #2d3436; margin-bottom: 12px;'>🔥 Your Progress</div>
+  <div style='background-color: #dfe6e9; height: 36px; width: 100%; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 5px rgba(0,0,0,0.15);'>
+    <div style='width: {progress_percent}%; height: 100%; background-color: #00b894; text-align: center;
+                color: white; line-height: 36px; font-weight: bold; font-size: 14px; transition: width 0.5s ease-in-out;'>
+      {completed} of {total_workouts} ({progress_percent}%)
+    </div>
+  </div>
+  <p style='font-style: italic; color: #636e72; margin-top: 12px;'>“Small progress is still progress.”</p>
+</div>
+""", unsafe_allow_html=True)
 
 # Session state init
 if "current_page" not in st.session_state:
@@ -57,7 +56,7 @@ if "selected_workout" not in st.session_state:
 if "selected_date_key" not in st.session_state:
     st.session_state.selected_date_key = None
 if "start_date" not in st.session_state:
-    st.session_state.start_date = datetime.date.today()
+    st.session_state.start_date = None
 
 # --- Editable Calendar ---
 st.subheader(":calendar: Weekly Training Grid Editor")
@@ -91,48 +90,67 @@ if st.button("🔄 Reset schedule to default"):
     workout_schedule = program_data.get("schedule", {})
     with open("schedule.json", "w") as f:
         json.dump(workout_schedule, f, indent=2)
-    valid_keys = {
-        f"{w}_{d}" for w in workout_schedule for d in workout_schedule[w] if workout_schedule[w][d].startswith("Training")
-    }
-    progress = {k: v for k, v in progress.items() if k in valid_keys}
+    progress = {}  # Clear all completed progress
     with open("progress.json", "w") as f:
         json.dump(progress, f, indent=2)
+    if os.path.exists("notes.json"):
+        with open("notes.json", "w") as f:
+            json.dump({}, f, indent=2)  # Clear all notes
+    st.session_state.start_date = None
+    st.session_state.selected_workout = None
+    st.session_state.selected_date_key = None
     st.rerun()
 
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 editable_weeks = page_weeks
 
-# Uniform button style
-button_style = """
-display: inline-block;
-padding: 10px;
-font-size: 14px;
-text-align: center;
-width: 100%;
-height: 50px;
-border-radius: 6px;
-border: 1px solid #ccc;
-background-color: #f8f9fa;
-box-shadow: 1px 1px 3px rgba(0,0,0,0.05);
-margin: 4px auto;
-display: flex;
-justify-content: center;
-align-items: center;
-"""
+# Compute base date from first completed workout
+if progress:
+    if not st.session_state.start_date:
+        first_completed_key = sorted(progress.keys())[0]
+        week_idx = int(first_completed_key.split("_")[1]) - 1
+        st.session_state.start_date = datetime.date.today() - datetime.timedelta(weeks=week_idx)
+else:
+    st.session_state.start_date = None
 
-# Compute base date
-base_date = None
-for k in sorted(progress):
-    if k in workout_schedule:
-        continue
-    week, day = k.split("_")[0] + "_" + k.split("_")[1], k.split("_")[2]
-    if week in workout_schedule and workout_schedule[week].get(day, "").startswith("Training"):
-        base_date = datetime.date.today()
-        break
+base_date = st.session_state.start_date
+
 if not base_date:
-    base_date = datetime.date.today()
+    st.info("📅 Dates will appear once you complete your first workout.")
+
+# --- Inject global CSS ---
+st.markdown("""
+<style>
+div[data-testid="stButton"] button {
+    width: 110px;
+    height: 80px;
+    white-space: pre-wrap;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 12px;
+    padding: 6px;
+    overflow: hidden;
+}
+
+/* Responsive scrollable calendar container */
+.scroll-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    div[data-testid="stButton"] button {
+        width: 100px;
+        height: 70px;
+        font-size: 11px;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Draw calendar
+st.markdown("<div class='scroll-container'>", unsafe_allow_html=True)
 for week_index, w in enumerate(editable_weeks):
     with st.container():
         st.markdown(f"<div style='padding: 8px 0; font-size: 20px; font-weight: bold; color: #2c3e50;'>{w}</div>", unsafe_allow_html=True)
@@ -141,28 +159,48 @@ for week_index, w in enumerate(editable_weeks):
         for i, d in enumerate(weekdays):
             with cols[i]:
                 default_val = workout_schedule.get(w, {}).get(d, "Rest")
-                day_offset = (week_keys_sorted.index(w) * 7) + i
-                current_date = base_date + datetime.timedelta(days=day_offset)
-                date_str = current_date.strftime("%b %d")
-                today = datetime.datetime.now().strftime("%A")
-                highlight = (w == f"week_{datetime.datetime.now().isocalendar()[1]}" and d == today)
-                highlight_completed = f"{w}_{d}" in progress and default_val.startswith("Training")
-                style = "background-color: #90ee90;" if highlight_completed else ("background-color: #ffffcc;" if highlight else "")
-                btn_label = f"{d[:3]} {default_val}"
-                button_html = f"""
-                <div style='{button_style}{style}'>{btn_label}</div>
-                """
-                if st.button(btn_label, key=f"btn-{w}-{d}", help=f"Click to view or mark {default_val}"):
-                    if default_val.startswith("Training"):
+                if base_date:
+                    day_offset = (week_keys_sorted.index(w) * 7) + i
+                    current_date = base_date + datetime.timedelta(days=day_offset)
+                    date_str = current_date.strftime("%b %d")
+                else:
+                    date_str = ""
+
+                date_key = f"{w}_{d}"
+                is_workout_day = default_val.startswith("Training")
+                is_completed = date_key in progress
+                is_today = base_date and (current_date == datetime.date.today())
+
+                if is_completed:
+                    color = "#28a745"  # green
+                elif is_today and is_workout_day:
+                    color = "#ffc107"  # yellow
+                elif is_workout_day:
+                    color = "#007bff"  # blue
+                else:
+                    color = "#f8f9fa"  # light gray
+
+                button_text = f"{d[:3]}\n{default_val}\n{date_str}"
+
+                # Wrap button in colored div
+                st.markdown(f"<div style='background-color:{color}; padding:2px; border-radius:8px;'>", unsafe_allow_html=True)
+                if st.button(button_text, key=f"btn_{w}_{d}"):
+                    if is_workout_day:
                         st.session_state.selected_workout = default_val
-                        st.session_state.selected_date_key = f"{w}_{d}"
-                st.markdown(button_html, unsafe_allow_html=True)
+                        st.session_state.selected_date_key = date_key
+                st.markdown("</div>", unsafe_allow_html=True)
+
                 if w not in workout_schedule:
                     workout_schedule[w] = {}
                 workout_schedule[w][d] = default_val
-                if default_val.startswith("Training"):
+
+                if is_workout_day:
                     workouts_in_week += 1
-        st.caption(f"\U0001f4dc Workouts this week: {workouts_in_week}")
+
+        st.caption(f"📜 Workouts this week: {workouts_in_week}")
+st.markdown("<hr style='margin: 20px 0;'>", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Sidebar Workout Viewer ---
 if st.session_state.selected_workout and st.session_state.selected_date_key:
@@ -173,12 +211,19 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
 
     if workout_data:
         with st.sidebar:
-            st.markdown(f"<h3 style='margin-bottom: 5px;'>🏋️‍♂️ <span style='font-size:20px;'>Workout {workout_name} ({workout_data['location']})</span></h3>", unsafe_allow_html=True)
+            st.markdown(f"<h3 style='margin-bottom: 5px;'>⛹️‍♂️ <span style='font-size:20px;'>Workout {workout_name} ({workout_data['location']})</span></h3>", unsafe_allow_html=True)
 
             for section, exercises in workout_data["exercises"].items():
                 st.markdown(f"<h4 style='color:#2980b9;'>{section}</h4>", unsafe_allow_html=True)
                 for ex in exercises:
                     st.markdown(f"<span style='font-weight:bold;'>{ex['name']}</span> - {ex['sets']} sets x {ex['reps']}", unsafe_allow_html=True)
+                # Auto-include stretching blocks
+                if section.lower() == "warmup":
+                    st.markdown(f"<h4 style='color:#2980b9;'>Light Stretching</h4>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-weight:bold;'>Stretch major muscle groups</span> - 1 set x 30 sec", unsafe_allow_html=True)
+                if section.lower() == "main":
+                    st.markdown(f"<h4 style='color:#2980b9;'>Heavy Stretching</h4>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-weight:bold;'>Deep hamstring/quads/hips stretch</span> - 2 sets x 45 sec", unsafe_allow_html=True)
 
             if st.checkbox("✅ Mark workout as completed", value=date_key in progress):
                 progress[date_key] = True
@@ -194,11 +239,11 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
             else:
                 notes = {}
             note_text = st.text_area("🗒 Notes", value=notes.get(note_key, ""))
-            if st.button("💾 Save Notes"):
+            if st.button("💾 Save Workout"):
                 notes[note_key] = note_text
                 with open("notes.json", "w") as f:
                     json.dump(notes, f, indent=2)
-                st.success("Notes saved!")
+                st.success("Workout saved!")
 
             if st.button("❌ Close Workout"):
                 st.session_state.selected_workout = None
