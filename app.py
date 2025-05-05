@@ -273,11 +273,11 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
             else:
                 notes = {}
             note_text = st.text_area("🗒 Notes", value=notes.get(note_key, ""))
-            if st.button("💾 Save Notes"):
+            if st.button("💾 Save Workout"):
                 notes[note_key] = note_text
                 with open("notes.json", "w") as f:
                     json.dump(notes, f, indent=2)
-                st.success("Notes saved!")
+                st.success("Workout saved!")
 
             if st.button("❌ Close Workout"):
                 st.session_state.selected_workout = None
