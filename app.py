@@ -33,7 +33,7 @@ else:
 
 # --- Streamlit UI ---
 st.set_page_config(layout="wide")
-st.markdown("<h1 style='font-size: 36px; color: #1e3799;'>🚀 Mad Bounce Vertical Jump Program</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size: 36px; color: #1e3799; margin-top: 10px;'>🚀 Mad Bounce Vertical Jump Program</h1>", unsafe_allow_html=True)
 
 # Calculate progress
 completed = len(progress)
@@ -67,13 +67,13 @@ if "start_date" not in st.session_state:
 # --- Editable Calendar ---
 st.markdown("""
 <div class='calendar-wrapper'>
-<h2 style='font-size: 22px;'>Weekly Training Schedule</h2>
+<h2 style='font-size: 22px;'>📅 Weekly Training Schedule</h2>
 """, unsafe_allow_html=True)
 
 # Week selection with pagination
 week_keys = [w for w in program_data["workouts"].keys() if w.startswith("week_") and len(w.split('_')) == 2 and w.split('_')[1].isdigit()]
 week_keys_sorted = sorted(week_keys, key=lambda w: int(w.split('_')[1]))
-pages = [week_keys_sorted[i:i + 4] for i in range(0, len(week_keys_sorted), 4)]
+pages = [week_keys_sorted[i:i + 2] for i in range(0, len(week_keys_sorted), 2)]
 
 if not pages:
     st.error("No valid workout weeks found in program_data.json.")
