@@ -42,8 +42,7 @@ total_workouts = 34
 progress_percent = round((completed / total_workouts) * 100)
 
 # Progress bar with text
-st.markdown("""
-<div class='top-bar'>
+st.markdown(f"""
 <div style='background-color: #f0f4f8; border-radius: 12px; padding: 16px 12px; margin-top: 10px; position: sticky; top: 0; z-index: 10;'>
   <div style='font-size: 22px; font-weight: 600; color: #2d3436; margin-bottom: 12px;'>🔥 Your Progress</div>
   <div style='background-color: #dfe6e9; height: 36px; width: 100%; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 5px rgba(0,0,0,0.15);'>
@@ -99,8 +98,8 @@ with nav2:
 with nav3:
     st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
 
-st.markdown("</div>", unsafe_allow_html=True)  # close sticky-nav
-st.markdown("</div>", unsafe_allow_html=True)  # close top-bar
+st.markdown("</div>", unsafe_allow_html=True)
+    
 
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
@@ -169,17 +168,6 @@ div[data-testid="stButton"] button {
     z-index: 10;
     border-bottom: 1px solid #e0e0e0;
 }
-.top-bar {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background-color: #fff;
-    border-bottom: 1px solid #eee;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
 </style>
 """, unsafe_allow_html=True)
 
