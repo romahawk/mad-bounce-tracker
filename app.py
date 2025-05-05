@@ -4,9 +4,11 @@ import os
 import datetime
 import plotly.graph_objects as go
 import streamlit as st
+import firebase_admin
 from firebase_admin import credentials, initialize_app, firestore
 
 if not firebase_admin._apps:
+    if not firebase_admin._apps:
     cred = credentials.Certificate(dict(st.secrets["firebase"]))
     initialize_app(cred)
 db = firestore.client()
