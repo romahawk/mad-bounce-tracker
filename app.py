@@ -91,11 +91,11 @@ st.markdown("""
 
 nav1, nav2, nav3 = st.columns([1, 1, 1])
 with nav1:
-    st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1)
+    st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1, key="prev_btn", help="Previous", kwargs={"use_container_width": True})
 with nav2:
-    st.button("🔄 Reset", on_click=lambda: st.session_state.update(reset=True))
+    st.button("🔄 Reset", on_click=lambda: st.session_state.update(reset=True), key="reset_btn", help="Reset", kwargs={"use_container_width": True})
 with nav3:
-    st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
+    st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages), key="next_btn", help="Next", kwargs={"use_container_width": True})
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -123,6 +123,7 @@ if not base_date:
 st.markdown("""
 <style>
 div[data-testid="stButton"] button {
+    height: 26px !important;
     width: 140px;
     height: 110px;
     white-space: pre-wrap;
