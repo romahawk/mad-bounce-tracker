@@ -3,7 +3,14 @@ import json
 import os
 import datetime
 import plotly.graph_objects as go
-from firebase_config import db
+import streamlit as st
+import firebase_admin
+from firebase_admin import credentials, initialize_app, firestore
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate(dict(st.secrets["firebase"]))
+    initialize_app(cred)
+db = firestore.client()
 
 # Load program data
 with open("program_data.json", "r", encoding="utf-8") as f:
@@ -36,7 +43,7 @@ progress_percent = round((completed / total_workouts) * 100)
 
 # Progress bar with text
 st.markdown(f"""
-<div style='background-color: #f0f4f8; border-radius: 12px; padding: 25px 20px; margin-top: 10px;'>
+<div style='background-color: #f0f4f8; border-radius: 12px; padding: 16px 12px; margin-top: 10px; position: sticky; top: 0; z-index: 10;'>
   <div style='font-size: 22px; font-weight: 600; color: #2d3436; margin-bottom: 12px;'>🔥 Your Progress</div>
   <div style='background-color: #dfe6e9; height: 36px; width: 100%; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 5px rgba(0,0,0,0.15);'>
     <div style='width: {progress_percent}%; height: 100%; background-color: #00b894; text-align: center;
@@ -59,7 +66,10 @@ if "start_date" not in st.session_state:
     st.session_state.start_date = None
 
 # --- Editable Calendar ---
-st.subheader(":calendar: Weekly Training Grid Editor")
+st.markdown("""
+<div class='calendar-wrapper'>
+<h2 style='font-size: 22px;'>📅 Weekly Training Grid Editor</h2>
+""", unsafe_allow_html=True)
 
 # Week selection with pagination
 week_keys = [w for w in program_data["workouts"].keys() if w.startswith("week_") and len(w.split('_')) == 2 and w.split('_')[1].isdigit()]
@@ -76,30 +86,26 @@ def go_prev():
 def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.button("⬅️ Prev", on_click=go_prev, disabled=st.session_state.current_page == 1)
-with col2:
-    st.button("Next ➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
+st.markdown("""
+<div class='sticky-nav'>
+""", unsafe_allow_html=True)
+
+nav1, nav2, nav3 = st.columns([1, 1, 1])
+with nav1:
+    st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1)
+with nav2:
+    st.button("🔄 Reset", on_click=lambda: st.session_state.update(reset=True))
+with nav3:
+    st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
+
+st.markdown("</div>", unsafe_allow_html=True)
+    
 
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
 
 # Reset button
-if st.button("🔄 Reset schedule to default"):
-    workout_schedule = program_data.get("schedule", {})
-    with open("schedule.json", "w") as f:
-        json.dump(workout_schedule, f, indent=2)
-    progress = {}  # Clear all completed progress
-    with open("progress.json", "w") as f:
-        json.dump(progress, f, indent=2)
-    if os.path.exists("notes.json"):
-        with open("notes.json", "w") as f:
-            json.dump({}, f, indent=2)  # Clear all notes
-    st.session_state.start_date = None
-    st.session_state.selected_workout = None
-    st.session_state.selected_date_key = None
-    st.rerun()
+
 
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 editable_weeks = page_weeks
@@ -117,6 +123,7 @@ base_date = st.session_state.start_date
 
 if not base_date:
     st.info("📅 Dates will appear once you complete your first workout.")
+
 
 # --- Inject global CSS ---
 st.markdown("""
@@ -145,6 +152,21 @@ div[data-testid="stButton"] button {
         height: 70px;
         font-size: 11px;
     }
+}
+.calendar-wrapper {
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.calendar-wrapper .sticky-nav {
+    position: sticky;
+    top: 0;
+    background-color: #fff9db;
+    padding: 10px 0;
+    z-index: 10;
+    border-bottom: 1px solid #e0e0e0;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -200,7 +222,8 @@ for week_index, w in enumerate(editable_weeks):
         st.caption(f"📜 Workouts this week: {workouts_in_week}")
 st.markdown("<hr style='margin: 20px 0;'>", unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)  # closes scroll-container
+st.markdown("</div>", unsafe_allow_html=True)  # closes calendar-wrapper
 
 # --- Sidebar Workout Viewer ---
 if st.session_state.selected_workout and st.session_state.selected_date_key:
@@ -239,11 +262,11 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
             else:
                 notes = {}
             note_text = st.text_area("🗒 Notes", value=notes.get(note_key, ""))
-            if st.button("💾 Save Workout"):
+            if st.button("💾 Save Notes"):
                 notes[note_key] = note_text
                 with open("notes.json", "w") as f:
                     json.dump(notes, f, indent=2)
-                st.success("Workout saved!")
+                st.success("Notes saved!")
 
             if st.button("❌ Close Workout"):
                 st.session_state.selected_workout = None
