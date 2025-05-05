@@ -3,7 +3,12 @@ import json
 import os
 import datetime
 import plotly.graph_objects as go
+import streamlit as st
 from firebase_admin import credentials, initialize_app, firestore
+
+cred = credentials.Certificate(dict(st.secrets["firebase"]))
+initialize_app(cred)
+db = firestore.client()
 
 # Load program data
 with open("program_data.json", "r", encoding="utf-8") as f:
@@ -36,7 +41,7 @@ progress_percent = round((completed / total_workouts) * 100)
 
 # Progress bar with text
 st.markdown(f"""
-<div style='background-color: #f0f4f8; border-radius: 12px; padding: 25px 20px; margin-top: 10px;'>
+<div style='background-color: #f0f4f8; border-radius: 12px; padding: 16px 12px; margin-top: 10px; position: sticky; top: 0; z-index: 10;'>
   <div style='font-size: 22px; font-weight: 600; color: #2d3436; margin-bottom: 12px;'>🔥 Your Progress</div>
   <div style='background-color: #dfe6e9; height: 36px; width: 100%; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 5px rgba(0,0,0,0.15);'>
     <div style='width: {progress_percent}%; height: 100%; background-color: #00b894; text-align: center;
@@ -76,10 +81,13 @@ def go_prev():
 def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.button("⬅️ Prev", on_click=go_prev, disabled=st.session_state.current_page == 1)
-with col2:
+nav1, nav2, nav3 = st.columns([1, 1, 1])
+with nav1:
+    st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1)
+with nav2:
+    st.button("🔄 Reset", on_click=lambda: st.session_state.update(reset=True))
+with nav3:
+    st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
     st.button("Next ➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
 
 current_page = st.session_state.current_page
@@ -117,6 +125,7 @@ base_date = st.session_state.start_date
 
 if not base_date:
     st.info("📅 Dates will appear once you complete your first workout.")
+
 
 # --- Inject global CSS ---
 st.markdown("""
@@ -239,11 +248,11 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
             else:
                 notes = {}
             note_text = st.text_area("🗒 Notes", value=notes.get(note_key, ""))
-            if st.button("💾 Save Workout"):
+            if st.button("💾 Save Notes"):
                 notes[note_key] = note_text
                 with open("notes.json", "w") as f:
                     json.dump(notes, f, indent=2)
-                st.success("Workout saved!")
+                st.success("Notes saved!")
 
             if st.button("❌ Close Workout"):
                 st.session_state.selected_workout = None
