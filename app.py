@@ -83,6 +83,10 @@ def go_prev():
 def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
+st.markdown("""
+<div style='position: sticky; top: 100px; background-color: #fff9db; padding: 10px 0; z-index: 20;'>
+""", unsafe_allow_html=True)
+
 nav1, nav2, nav3 = st.columns([1, 1, 1])
 with nav1:
     st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1)
@@ -90,26 +94,15 @@ with nav2:
     st.button("🔄 Reset", on_click=lambda: st.session_state.update(reset=True))
 with nav3:
     st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
-    st.button("Next ➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
+
+st.markdown("</div>", unsafe_allow_html=True)    st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
+    
 
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
 
 # Reset button
-if st.button("🔄 Reset schedule to default"):
-    workout_schedule = program_data.get("schedule", {})
-    with open("schedule.json", "w") as f:
-        json.dump(workout_schedule, f, indent=2)
-    progress = {}  # Clear all completed progress
-    with open("progress.json", "w") as f:
-        json.dump(progress, f, indent=2)
-    if os.path.exists("notes.json"):
-        with open("notes.json", "w") as f:
-            json.dump({}, f, indent=2)  # Clear all notes
-    st.session_state.start_date = None
-    st.session_state.selected_workout = None
-    st.session_state.selected_date_key = None
-    st.rerun()
+
 
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 editable_weeks = page_weeks
