@@ -66,7 +66,10 @@ if "start_date" not in st.session_state:
     st.session_state.start_date = None
 
 # --- Editable Calendar ---
-st.subheader(":calendar: Weekly Training Grid Editor")
+st.markdown("""
+<div class='calendar-wrapper'>
+<h2 style='font-size: 22px;'>📅 Weekly Training Grid Editor</h2>
+""", unsafe_allow_html=True)
 
 # Week selection with pagination
 week_keys = [w for w in program_data["workouts"].keys() if w.startswith("week_") and len(w.split('_')) == 2 and w.split('_')[1].isdigit()]
@@ -84,7 +87,7 @@ def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
 st.markdown("""
-<div style='position: sticky; top: 100px; background-color: #fff9db; padding: 10px 0; z-index: 20;'>
+<div class='sticky-nav'>
 """, unsafe_allow_html=True)
 
 nav1, nav2, nav3 = st.columns([1, 1, 1])
@@ -150,6 +153,21 @@ div[data-testid="stButton"] button {
         font-size: 11px;
     }
 }
+.calendar-wrapper {
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.calendar-wrapper .sticky-nav {
+    position: sticky;
+    top: 0;
+    background-color: #fff9db;
+    padding: 10px 0;
+    z-index: 10;
+    border-bottom: 1px solid #e0e0e0;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -204,7 +222,8 @@ for week_index, w in enumerate(editable_weeks):
         st.caption(f"📜 Workouts this week: {workouts_in_week}")
 st.markdown("<hr style='margin: 20px 0;'>", unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)  # closes scroll-container
+st.markdown("</div>", unsafe_allow_html=True)  # closes calendar-wrapper
 
 # --- Sidebar Workout Viewer ---
 if st.session_state.selected_workout and st.session_state.selected_date_key:
