@@ -123,14 +123,15 @@ if not base_date:
 st.markdown("""
 <style>
 div[data-testid="stButton"] button {
-    width: 120px;
-    height: 90px;
+    width: 140px;
+    height: 110px;
     white-space: pre-wrap;
     text-align: center;
-    border-radius: 8px;
-    font-size: 13px;
-    padding: 8px;
+    border-radius: 10px;
+    font-size: 14px;
+    padding: 10px;
     overflow: hidden;
+    line-height: 1.3;
 }
 
 /* Hover effect */
@@ -148,10 +149,11 @@ div[data-testid="stButton"] button:hover {
 
 @media (max-width: 768px) {
     div[data-testid="stButton"] button {
-        width: 110px;
-        height: 80px;
-        font-size: 12px;
+        width: 120px;
+        height: 100px;
+        font-size: 13px;
     }
+}
 }
 }
 .calendar-wrapper {
