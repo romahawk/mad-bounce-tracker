@@ -85,10 +85,10 @@ def go_prev():
 def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
-# Render navigation bar in a separate fixed container
+# Render navigation bar
 with st.container():
     st.markdown("""
-    <div class='fixed-nav'>
+    <div class='sticky-nav' id='sticky-nav'>
     """, unsafe_allow_html=True)
     nav1, nav2, nav3 = st.columns([1, 1, 1])
     with nav1:
@@ -119,7 +119,7 @@ base_date = st.session_state.start_date
 if not base_date:
     st.info("📅 Dates will appear once you complete your first workout.")
 
-# --- Inject global CSS ---
+# --- Inject global CSS and JavaScript ---
 st.markdown("""
 <style>
 div[data-testid="stButton"] button {
@@ -154,14 +154,11 @@ div[data-testid="stButton"] button {
     overflow-y: auto;
     position: relative;
     padding-bottom: 20px;
-    padding-top: 60px; /* Space for fixed nav */
+    padding-top: 60px; /* Space for sticky nav */
 }
 
-/* Fixed navigation bar */
-.fixed-nav {
-    position: fixed !important;
-    top: 150px; /* Below progress bar (adjust based on progress bar height) */
-    width: 100%;
+/* Sticky navigation bar */
+.sticky-nav {
     background-color: #ffffff;
     padding: 8px 10px;
     z-index: 20;
@@ -170,10 +167,11 @@ div[data-testid="stButton"] button {
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
+    width: 100%;
 }
 
 /* Style navigation buttons */
-.fixed-nav div[data-testid="stButton"] button {
+.sticky-nav div[data-testid="stButton"] button {
     width: 100%;
     height: 40px;
     font-size: 14px;
@@ -184,20 +182,33 @@ div[data-testid="stButton"] button {
     transition: background-color 0.2s;
 }
 
-.fixed-nav div[data-testid="stButton"] button:hover {
+.sticky-nav div[data-testid="stButton"] button:hover {
     background-color: #45a049;
 }
 
 @media (max-width: 768px) {
-    .fixed-nav {
+    .sticky-nav {
         padding: 6px 8px;
     }
-    .fixed-nav div[data-testid="stButton"] button {
+    .sticky-nav div[data-testid="stButton"] button {
         height: 36px;
         font-size: 12px;
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nav = document.getElementById('sticky-nav');
+    const calendarWrapper = document.querySelector('.calendar-wrapper');
+    if (nav && calendarWrapper) {
+        const wrapperRect = calendarWrapper.getBoundingClientRect();
+        nav.style.position = 'sticky';
+        nav.style.top = '0px';
+        nav.style.width = `${wrapperRect.width}px`;
+    }
+});
+</script>
 """, unsafe_allow_html=True)
 
 # Draw calendar
