@@ -85,10 +85,10 @@ def go_prev():
 def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
-# Render navigation bar in a separate container
+# Render navigation bar in a separate fixed container
 with st.container():
     st.markdown("""
-    <div class='sticky-nav'>
+    <div class='fixed-nav'>
     """, unsafe_allow_html=True)
     nav1, nav2, nav3 = st.columns([1, 1, 1])
     with nav1:
@@ -154,13 +154,14 @@ div[data-testid="stButton"] button {
     overflow-y: auto;
     position: relative;
     padding-bottom: 20px;
-    padding-top: 60px; /* Space for sticky nav */
+    padding-top: 60px; /* Space for fixed nav */
 }
 
-/* Sticky navigation bar */
-.sticky-nav {
-    position: sticky !important;
-    top: 0 !important;
+/* Fixed navigation bar */
+.fixed-nav {
+    position: fixed !important;
+    top: 150px; /* Below progress bar (adjust based on progress bar height) */
+    width: 100%;
     background-color: #ffffff;
     padding: 8px 10px;
     z-index: 20;
@@ -169,11 +170,10 @@ div[data-testid="stButton"] button {
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
-    width: 100%;
 }
 
 /* Style navigation buttons */
-.sticky-nav div[data-testid="stButton"] button {
+.fixed-nav div[data-testid="stButton"] button {
     width: 100%;
     height: 40px;
     font-size: 14px;
@@ -184,15 +184,15 @@ div[data-testid="stButton"] button {
     transition: background-color 0.2s;
 }
 
-.sticky-nav div[data-testid="stButton"] button:hover {
+.fixed-nav div[data-testid="stButton"] button:hover {
     background-color: #45a049;
 }
 
 @media (max-width: 768px) {
-    .sticky-nav {
+    .fixed-nav {
         padding: 6px 8px;
     }
-    .sticky-nav div[data-testid="stButton"] button {
+    .fixed-nav div[data-testid="stButton"] button {
         height: 36px;
         font-size: 12px;
     }
