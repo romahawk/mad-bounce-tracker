@@ -176,7 +176,12 @@ st.markdown("<div class='scroll-container'>", unsafe_allow_html=True)
 for week_index, w in enumerate(editable_weeks):
     is_rest_week = all(day_val == "Rest" for day_val in workout_schedule.get(w, {}).values())
     if is_rest_week:
-        st.markdown(f"<div style='padding: 4px 0 0 0; font-size: 16px; color: #e74c3c;'>❗️ {w} is a full Rest Week</div>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='background-color:#ffe6e6; border:1px solid #e74c3c; padding:10px; border-radius:10px; margin:10px 0;'>
+            <strong>🛌 {w} is a full Rest Week</strong>
+        </div>
+        """, unsafe_allow_html=True)
+        continue
     with st.container():
         st.markdown(f"<div style='padding: 8px 0; font-size: 20px; font-weight: bold; color: #2c3e50;'>{w}</div>", unsafe_allow_html=True)
         cols = st.columns(len(weekdays))
