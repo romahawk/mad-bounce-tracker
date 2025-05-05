@@ -123,13 +123,13 @@ if not base_date:
 st.markdown("""
 <style>
 div[data-testid="stButton"] button {
-    width: 110px;
-    height: 80px;
+    width: 120px;
+    height: 90px;
     white-space: pre-wrap;
     text-align: center;
     border-radius: 8px;
-    font-size: 12px;
-    padding: 6px;
+    font-size: 13px;
+    padding: 8px;
     overflow: hidden;
 }
 
@@ -148,10 +148,11 @@ div[data-testid="stButton"] button:hover {
 
 @media (max-width: 768px) {
     div[data-testid="stButton"] button {
-        width: 100px;
-        height: 70px;
-        font-size: 11px;
+        width: 110px;
+        height: 80px;
+        font-size: 12px;
     }
+}
 }
 .calendar-wrapper {
     max-height: 80vh;
