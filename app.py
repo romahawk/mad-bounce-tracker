@@ -6,8 +6,9 @@ import plotly.graph_objects as go
 import streamlit as st
 from firebase_admin import credentials, initialize_app, firestore
 
-cred = credentials.Certificate(dict(st.secrets["firebase"]))
-initialize_app(cred)
+if not firebase_admin._apps:
+    cred = credentials.Certificate(dict(st.secrets["firebase"]))
+    initialize_app(cred)
 db = firestore.client()
 
 # Load program data
