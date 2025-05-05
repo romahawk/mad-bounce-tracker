@@ -52,9 +52,9 @@ st.markdown(f"""
       {completed} of {total_workouts} ({progress_percent}%)
     </div>
   </div>
-  <p style='font-style: italic; color: #636e72; margin-top: 12px;'>“Small progress is still progress.”</p>""", unsafe_allow_html=True)
+  <p style='font-style: italic; color: #636e72; margin-top: 12px;'>“Small progress is still progress.”</p>
 </div>
-""", unsafe_allow_html=True)
+</div>""", unsafe_allow_html=True)
 
 # Session state init
 if "current_page" not in st.session_state:
@@ -69,8 +69,7 @@ if "start_date" not in st.session_state:
 # --- Editable Calendar ---
 st.markdown("""
 <div class='calendar-wrapper'>
-st.markdown("<h2 style='font-size: 22px;'>📅 Weekly Training Grid Editor</h2>", unsafe_allow_html=True)
-""", unsafe_allow_html=True)
+<h2 style='font-size: 22px;'>📅 Weekly Training Grid Editor</h2>
 
 # Week selection with pagination
 week_keys = [w for w in program_data["workouts"].keys() if w.startswith("week_") and len(w.split('_')) == 2 and w.split('_')[1].isdigit()]
