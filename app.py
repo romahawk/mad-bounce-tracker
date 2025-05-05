@@ -86,16 +86,32 @@ def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
 st.markdown("""
-<div class='sticky-nav'>
+""<div class='sticky-nav'>
+<style>
+#prev_btn button, #next_btn button, #reset_btn button {
+    height: 24px !important;
+    padding: 4px 8px !important;
+    font-size: 13px !important;
+}
+</style>""
 """, unsafe_allow_html=True)
 
 nav1, nav2, nav3 = st.columns([1, 1, 1])
 with nav1:
-    st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1)
+    st.markdown("""
+<style>
+#prev_btn button, #next_btn button, #reset_btn button {
+    height: 24px !important;
+    padding: 2px 8px !important;
+    font-size: 13px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1, key="prev_btn")
 with nav2:
-    st.button("🔄 Reset", on_click=lambda: st.session_state.update(reset=True))
+    st.button("🔄 Reset", on_click=lambda: st.session_state.update(reset=True), key="reset_btn")
 with nav3:
-    st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
+    st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages), key="next_btn")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -123,6 +139,7 @@ if not base_date:
 st.markdown("""
 <style>
 div[data-testid="stButton"] button {
+    height: auto;
     width: 140px;
     height: 110px;
     white-space: pre-wrap;
