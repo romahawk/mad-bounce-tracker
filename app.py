@@ -3,7 +3,6 @@ import json
 import os
 import datetime
 import plotly.graph_objects as go
-import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, initialize_app, firestore
 
@@ -94,18 +93,14 @@ nav1, nav2, nav3 = st.columns([1, 1, 1])
 with nav1:
     st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1)
 with nav2:
-    st.button("🔄 Reset", on_click=lambda: st.session_state.update(reset=True))
+    st.button("🔄 Reset", on_click=lambda: st.session_state.update(current_page=1))
 with nav3:
     st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
 
 st.markdown("</div>", unsafe_allow_html=True)
-    
 
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
-
-# Reset button
-
 
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 editable_weeks = page_weeks
@@ -123,7 +118,6 @@ base_date = st.session_state.start_date
 
 if not base_date:
     st.info("📅 Dates will appear once you complete your first workout.")
-
 
 # --- Inject global CSS ---
 st.markdown("""
@@ -158,15 +152,46 @@ div[data-testid="stButton"] button {
     overflow-y: auto;
     position: relative;
     padding-bottom: 20px;
+    padding-top: 60px; /* Space for sticky nav */
 }
 
 .calendar-wrapper .sticky-nav {
     position: sticky;
     top: 0;
-    background-color: #fff9db;
-    padding: 10px 0;
-    z-index: 10;
+    background-color: #ffffff; /* Changed to white for consistency */
+    padding: 8px 10px;
+    z-index: 20; /* Higher than progress bar */
     border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* Style navigation buttons */
+.sticky-nav div[data-testid="stButton"] button {
+    width: 100%;
+    height: 40px;
+    font-size: 14px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.sticky-nav div[data-testid="stButton"] button:hover {
+    background-color: #45a049;
+}
+
+@media (max-width: 768px) {
+    .sticky-nav {
+        padding: 6px 8px;
+    }
+    .sticky-nav div[data-testid="stButton"] button {
+        height: 36px;
+        font-size: 12px;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -229,7 +254,7 @@ st.markdown("</div>", unsafe_allow_html=True)  # closes calendar-wrapper
 if st.session_state.selected_workout and st.session_state.selected_date_key:
     workout_name = st.session_state.selected_workout
     date_key = st.session_state.selected_date_key
-    week = date_key.split("_")[0] + "_" + date_key.split("_")[1]
+    week = date_key.split("_")[0]
     workout_data = program_data["workouts"].get(week, {}).get(workout_name)
 
     if workout_data:
