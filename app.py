@@ -42,7 +42,7 @@ total_workouts = 34
 progress_percent = round((completed / total_workouts) * 100)
 
 # Progress bar with text
-st.markdown(f"""
+st.markdown("""
 <div class='sticky-container'>
 <div style='background-color: #f0f4f8; border-radius: 12px; padding: 16px 12px; margin-top: 10px;'>
   <div style='font-size: 22px; font-weight: 600; color: #2d3436; margin-bottom: 12px;'>🔥 Your Progress</div>
@@ -54,7 +54,7 @@ st.markdown(f"""
   </div>
   <p style='font-style: italic; color: #636e72; margin-top: 12px;'>“Small progress is still progress.”</p>
 </div>
-</div>""", unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Session state init
 if "current_page" not in st.session_state:
@@ -70,6 +70,7 @@ if "start_date" not in st.session_state:
 st.markdown("""
 <div class='calendar-wrapper'>
 <h2 style='font-size: 22px;'>📅 Weekly Training Grid Editor</h2>
+""", unsafe_allow_html=True)
 
 # Week selection with pagination
 week_keys = [w for w in program_data["workouts"].keys() if w.startswith("week_") and len(w.split('_')) == 2 and w.split('_')[1].isdigit()]
@@ -86,7 +87,8 @@ def go_prev():
 def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
-
+st.markdown("""
+<div class='sticky-nav'>
 """, unsafe_allow_html=True)
 
 nav1, nav2, nav3 = st.columns([1, 1, 1])
@@ -97,6 +99,7 @@ with nav2:
 with nav3:
     st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
 
+st.markdown("</div>", unsafe_allow_html=True)  # close sticky-nav
 st.markdown("</div>", unsafe_allow_html=True)  # close sticky-container
 
 current_page = st.session_state.current_page
@@ -273,11 +276,11 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
             else:
                 notes = {}
             note_text = st.text_area("🗒 Notes", value=notes.get(note_key, ""))
-            if st.button("💾 Save Workout"):
+            if st.button("💾 Save Notes"):
                 notes[note_key] = note_text
                 with open("notes.json", "w") as f:
                     json.dump(notes, f, indent=2)
-                st.success("Workout saved!")
+                st.success("Notes saved!")
 
             if st.button("❌ Close Workout"):
                 st.session_state.selected_workout = None
