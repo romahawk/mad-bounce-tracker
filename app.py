@@ -203,15 +203,14 @@ for week_index, w in enumerate(editable_weeks):
                     color = "#e0e0e0"  # dimmer gray
 
                 if is_workout_day:
-                    button_text = f"**{d[:3]}**\n🟢 {default_val}\n{date_str}"
+                    button_text = f"{d[:3]}\n🟢 {default_val}\n{date_str}"
                 else:
-                    button_text = f"*{d[:3]}*\n💤 Rest\n{date_str}"
+                    button_text = f"{d[:3]}\n💤 Rest\n{date_str}"
 
                 st.markdown(f"<div style='background-color:{color}; padding:2px; border-radius:8px;'>", unsafe_allow_html=True)
                 if st.button(button_text, key=f"btn_{w}_{d}"):
-                    if is_workout_day:
-                        st.session_state.selected_workout = default_val
-                        st.session_state.selected_date_key = date_key
+                    st.session_state.selected_workout = default_val
+                    st.session_state.selected_date_key = date_key
                 st.markdown("</div>", unsafe_allow_html=True)
 
                 if w not in workout_schedule:
@@ -226,6 +225,52 @@ st.markdown("<hr style='margin: 20px 0;'>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)  # closes scroll-container
 st.markdown("</div>", unsafe_allow_html=True)  # closes calendar-wrapper
+
+# Sidebar Workout Viewer
+if st.session_state.selected_workout and st.session_state.selected_date_key:
+    workout_name = st.session_state.selected_workout
+    date_key = st.session_state.selected_date_key
+    week = date_key.split("_")[0] + "_" + date_key.split("_")[1]
+    workout_data = program_data["workouts"].get(week, {}).get(workout_name)
+
+    if workout_data:
+        with st.sidebar:
+            st.markdown(f"<h3 style='margin-bottom: 5px;'>⛹️‍♂️ <span style='font-size:20px;'>Workout {workout_name} ({workout_data['location']})</span></h3>", unsafe_allow_html=True)
+
+            for section, exercises in workout_data["exercises"].items():
+                st.markdown(f"<h4 style='color:#2980b9;'>{section}</h4>", unsafe_allow_html=True)
+                for ex in exercises:
+                    st.markdown(f"<span style='font-weight:bold;'>{ex['name']}</span> - {ex['sets']} sets x {ex['reps']}", unsafe_allow_html=True)
+                if section.lower() == "warmup":
+                    st.markdown(f"<h4 style='color:#2980b9;'>Light Stretching</h4>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-weight:bold;'>Stretch major muscle groups</span> - 1 set x 30 sec", unsafe_allow_html=True)
+                if section.lower() == "main":
+                    st.markdown(f"<h4 style='color:#2980b9;'>Heavy Stretching</h4>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='font-weight:bold;'>Deep hamstring/quads/hips stretch</span> - 2 sets x 45 sec", unsafe_allow_html=True)
+
+            if st.checkbox("✅ Mark workout as completed", value=date_key in progress):
+                progress[date_key] = True
+            else:
+                progress.pop(date_key, None)
+            with open("progress.json", "w") as f:
+                json.dump(progress, f, indent=2)
+
+            note_key = f"note_{date_key}"
+            if os.path.exists("notes.json"):
+                with open("notes.json", "r") as f:
+                    notes = json.load(f)
+            else:
+                notes = {}
+            note_text = st.text_area("🗒 Notes", value=notes.get(note_key, ""))
+            if st.button("💾 Save Notes"):
+                notes[note_key] = note_text
+                with open("notes.json", "w") as f:
+                    json.dump(notes, f, indent=2)
+                st.success("Notes saved!")
+
+            if st.button("❌ Close Workout"):
+                st.session_state.selected_workout = None
+                st.session_state.selected_date_key = None
 
 # Save updated schedule
 with open("schedule.json", "w") as f:
