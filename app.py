@@ -174,7 +174,12 @@ div[data-testid="stButton"] button:hover {
 # Draw calendar
 st.markdown("<div class='scroll-container'>", unsafe_allow_html=True)
 for week_index, w in enumerate(editable_weeks):
-    is_rest_week = all(day_val == "Rest" for day_val in workout_schedule.get(w, {}).values())
+    is_rest_week = True
+    for d in weekdays:
+        val = workout_schedule.get(w, {}).get(d, "Rest")
+        if val.startswith("Training") and val in program_data["workouts"].get(w, {}):
+            is_rest_week = False
+            break
     if is_rest_week:
         st.markdown(f"""
         <div style='background-color:#ffe6e6; border:1px solid #e74c3c; padding:10px; border-radius:10px; margin:10px 0;'>
