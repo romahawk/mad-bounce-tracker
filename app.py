@@ -67,7 +67,7 @@ if "start_date" not in st.session_state:
 # --- Editable Calendar ---
 st.markdown("""
 <div class='calendar-wrapper'>
-<h2 style='font-size: 22px;'>🗕️ Weekly Training Grid Editor</h2>
+<h2 style='font-size: 22px;'>Weekly Training Schedule</h2>
 """, unsafe_allow_html=True)
 
 # Week selection with pagination
