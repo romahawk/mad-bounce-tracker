@@ -42,7 +42,7 @@ total_workouts = 34
 progress_percent = round((completed / total_workouts) * 100)
 
 # Progress bar with text
-st.markdown("""
+st.markdown(f"""
 <div class='sticky-container'>
 <div style='background-color: #f0f4f8; border-radius: 12px; padding: 16px 12px; margin-top: 10px;'>
   <div style='font-size: 22px; font-weight: 600; color: #2d3436; margin-bottom: 12px;'>🔥 Your Progress</div>
@@ -52,7 +52,7 @@ st.markdown("""
       {completed} of {total_workouts} ({progress_percent}%)
     </div>
   </div>
-  <p style='font-style: italic; color: #636e72; margin-top: 12px;'>“Small progress is still progress.”</p>
+  <p style='font-style: italic; color: #636e72; margin-top: 12px;'>“Small progress is still progress.”</p>""", unsafe_allow_html=True)
 </div>
 """, unsafe_allow_html=True)
 
@@ -87,8 +87,7 @@ def go_prev():
 def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
-st.markdown("""
-<div class='sticky-nav'>
+
 """, unsafe_allow_html=True)
 
 nav1, nav2, nav3 = st.columns([1, 1, 1])
@@ -99,7 +98,6 @@ with nav2:
 with nav3:
     st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
 
-st.markdown("</div>", unsafe_allow_html=True)  # close sticky-nav
 st.markdown("</div>", unsafe_allow_html=True)  # close sticky-container
 
 current_page = st.session_state.current_page
