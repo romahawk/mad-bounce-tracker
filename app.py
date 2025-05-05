@@ -85,19 +85,19 @@ def go_prev():
 def go_next():
     st.session_state.current_page = min(len(pages), st.session_state.current_page + 1)
 
-st.markdown("""
-<div class='sticky-nav'>
-""", unsafe_allow_html=True)
-
-nav1, nav2, nav3 = st.columns([1, 1, 1])
-with nav1:
-    st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1)
-with nav2:
-    st.button("🔄 Reset", on_click=lambda: st.session_state.update(current_page=1))
-with nav3:
-    st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
-
-st.markdown("</div>", unsafe_allow_html=True)
+# Render navigation bar in a separate container
+with st.container():
+    st.markdown("""
+    <div class='sticky-nav'>
+    """, unsafe_allow_html=True)
+    nav1, nav2, nav3 = st.columns([1, 1, 1])
+    with nav1:
+        st.button("⬅️", on_click=go_prev, disabled=st.session_state.current_page == 1)
+    with nav2:
+        st.button("🔄 Reset", on_click=lambda: st.session_state.update(current_page=1))
+    with nav3:
+        st.button("➡️", on_click=go_next, disabled=st.session_state.current_page == len(pages))
+    st.markdown("</div>", unsafe_allow_html=True)
 
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
@@ -147,6 +147,8 @@ div[data-testid="stButton"] button {
         font-size: 11px;
     }
 }
+
+/* Calendar wrapper for scrollable content */
 .calendar-wrapper {
     max-height: 80vh;
     overflow-y: auto;
@@ -155,17 +157,19 @@ div[data-testid="stButton"] button {
     padding-top: 60px; /* Space for sticky nav */
 }
 
-.calendar-wrapper .sticky-nav {
-    position: sticky;
-    top: 0;
-    background-color: #ffffff; /* Changed to white for consistency */
+/* Sticky navigation bar */
+.sticky-nav {
+    position: sticky !important;
+    top: 0 !important;
+    background-color: #ffffff;
     padding: 8px 10px;
-    z-index: 20; /* Higher than progress bar */
+    z-index: 20;
     border-bottom: 1px solid #e0e0e0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
+    width: 100%;
 }
 
 /* Style navigation buttons */
