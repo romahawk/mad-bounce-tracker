@@ -3,7 +3,7 @@ import json
 import os
 import datetime
 import plotly.graph_objects as go
-from firebase_config import db
+from firebase_admin import credentials, initialize_app, firestore
 
 # Load program data
 with open("program_data.json", "r", encoding="utf-8") as f:
