@@ -1,0 +1,128 @@
+{
+    "week_1": {
+        "Monday": "Training_1",
+        "Tuesday": "Rest",
+        "Wednesday": "Training_2",
+        "Thursday": "Rest",
+        "Friday": "Training_2",
+        "Saturday": "Rest",
+        "Sunday": "Training_1"
+    },
+    "week_2": {
+        "Monday": "Rest",
+        "Tuesday": "Training_2",
+        "Wednesday": "Rest",
+        "Thursday": "Training_4",
+        "Friday": "Rest",
+        "Saturday": "Training_1",
+        "Sunday": "Rest"
+    },
+    "week_3": {
+        "Monday": "Training_3",
+        "Tuesday": "Rest",
+        "Wednesday": "Rest",
+        "Thursday": "Training_4",
+        "Friday": "Rest",
+        "Saturday": "Training_4",
+        "Sunday": "Rest"
+    },
+    "week_4": {
+        "Monday": "Training_3",
+        "Tuesday": "Rest",
+        "Wednesday": "Rest",
+        "Thursday": "Training_4",
+        "Friday": "Rest",
+        "Saturday": "Rest",
+        "Sunday": "Training_5"
+    },
+    "week_5": {
+        "Monday": "Training_5",
+        "Tuesday": "Rest",
+        "Wednesday": "Rest",
+        "Thursday": "Training_6",
+        "Friday": "Rest",
+        "Saturday": "Training_5",
+        "Sunday": "Rest"
+    },
+    "week_6": {
+        "Monday": "Rest",
+        "Tuesday": "Training_6",
+        "Wednesday": "Rest",
+        "Thursday": "Training_6",
+        "Friday": "Rest",
+        "Saturday": "Rest",
+        "Sunday": "Rest"
+    },
+    "week_7": {
+        "Monday": "Rest",
+        "Tuesday": "Rest",
+        "Wednesday": "Rest",
+        "Thursday": "Rest",
+        "Friday": "Rest",
+        "Saturday": "Training_7",
+        "Sunday": "Training_7"
+    },
+    "week_8": {
+        "Monday": "Training_8",
+        "Tuesday": "Rest",
+        "Wednesday": "Training_7",
+        "Thursday": "Rest",
+        "Friday": "Rest",
+        "Saturday": "Rest",
+        "Sunday": "Training_9"
+    },
+    "week_9": {
+        "Monday": "Rest",
+        "Tuesday": "Rest",
+        "Wednesday": "Rest",
+        "Thursday": "Rest",
+        "Friday": "Rest",
+        "Saturday": "Rest",
+        "Sunday": "Rest"
+    },
+    "week_10": {
+        "Monday": "Training_9",
+        "Tuesday": "Rest",
+        "Wednesday": "Rest",
+        "Thursday": "Rest",
+        "Friday": "Training_10",
+        "Saturday": "Rest",
+        "Sunday": "Rest"
+    },
+    "week_11": {
+        "Monday": "Training_9",
+        "Tuesday": "Rest",
+        "Wednesday": "Rest",
+        "Thursday": "Rest",
+        "Friday": "Rest",
+        "Saturday": "Rest",
+        "Sunday": "Training_11"
+    },
+    "week_12": {
+        "Monday": "Rest",
+        "Tuesday": "Rest",
+        "Wednesday": "Rest",
+        "Thursday": "Rest",
+        "Friday": "Training_12",
+        "Saturday": "Rest",
+        "Sunday": "Rest"
+    },
+    "week_13": {
+        "Monday": "Rest",
+        "Tuesday": "Rest",
+        "Wednesday": "Training_11",
+        "Thursday": "Rest",
+        "Friday": "Rest",
+        "Saturday": "Rest",
+        "Sunday": "Rest"
+    },
+    "week_14": {
+        "Monday": "Rest",
+        "Tuesday": "Rest",
+        "Wednesday": "Training_12",
+        "Thursday": "Rest",
+        "Friday": "Training_12",
+        "Saturday": "Rest",
+        "Sunday": "Training_11"
+    }
+}
