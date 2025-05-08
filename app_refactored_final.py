@@ -20,12 +20,21 @@ workout_schedule = load_json("./data/schedule.json") or program_data.get("schedu
 notes = load_json("./data/notes.json") or {}
 save_json("./data/schedule.json", workout_schedule)
 
-st.markdown("<h1 style='font-size: 36px; color: #1e3799;'>🚀 Mad Bounce Vertical Jump Program</h1>", unsafe_allow_html=True)
-if "start_date" not in st.session_state:
-    st.session_state.start_date = datetime.date.today()
+# Determine persistent start date from first completed workout
+if "start_date" not in st.session_state or st.session_state.start_date is None:
+    for key in sorted(progress.keys()):
+        val = progress[key]
+        if isinstance(val, dict) and val.get("completed") and val.get("date"):
+            st.session_state.start_date = datetime.datetime.strptime(val["date"], "%Y-%m-%d").date()
+            break
+    else:
+        st.session_state.start_date = datetime.date.today()
+
 st.session_state.start_date = st.date_input("📅 Select Start Date (First Completed Workout)", value=st.session_state.start_date)
 base_date = st.session_state.start_date
-completed = len([v for v in progress.values() if v == True or isinstance(v, dict) and v.get('completed')])
+
+st.markdown("<h1 style='font-size: 36px; color: #1e3799;'>🚀 Mad Bounce Vertical Jump Program</h1>", unsafe_allow_html=True)
+completed = len([v for v in progress.values() if v == True or (isinstance(v, dict) and v.get('completed'))])
 total_workouts = 34
 progress_percent = round((completed / total_workouts) * 100)
 st.markdown(f"""
@@ -39,6 +48,7 @@ st.markdown(f"""
   </div>
 </div>
 """, unsafe_allow_html=True)
+
 if "current_page" not in st.session_state:
     st.session_state.current_page = 1
 if "selected_workout" not in st.session_state:
@@ -50,6 +60,7 @@ week_keys = sorted([w for w in program_data['workouts']], key=lambda x: int(x.sp
 pages = [week_keys[i:i+2] for i in range(0, len(week_keys), 2)]
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
+
 col1, col2, col3 = st.columns(3)
 with col1:
     st.button("⬅️ Prev", on_click=lambda: st.session_state.update(current_page=max(1, current_page - 1)))
@@ -57,6 +68,7 @@ with col2:
     st.button("🔄 Reset All", on_click=lambda: (reset_progress(), reset_schedule(), reset_notes()))
 with col3:
     st.button("➡️ Next", on_click=lambda: st.session_state.update(current_page=min(len(pages), current_page + 1)))
+
 for w in page_weeks:
     st.subheader(f"📅 {w.replace('_', ' ').title()}")
     cols = st.columns(7)
@@ -64,17 +76,22 @@ for w in page_weeks:
         default_val = workout_schedule.get(w, {}).get(day, "Rest")
         date_key = f"{w}_{day}"
         is_workout = default_val.startswith("Training")
-        is_completed = progress.get(date_key) == True or (isinstance(progress.get(date_key), dict) and progress[date_key].get('completed'))
-        is_today = base_date + datetime.timedelta(days=(week_keys.index(w)*7 + i)) == datetime.date.today()
+        val = progress.get(date_key)
+        is_completed = val == True or (isinstance(val, dict) and val.get('completed'))
+        if isinstance(val, dict) and "planned" in val:
+            workout_date = datetime.datetime.strptime(val["planned"], "%Y-%m-%d").date()
+        else:
+            workout_date = base_date + datetime.timedelta(days=(week_keys.index(w)*7 + i))
+        is_today = workout_date == datetime.date.today()
         color = "#28a745" if is_completed else "#ffc107" if is_today and is_workout else "#007bff" if is_workout else "#e0e0e0"
-        workout_date = base_date + datetime.timedelta(days=(week_keys.index(w)*7 + i))
-        label = f"{day[:3]} {workout_date.strftime('%b %d')}\n{'🟢 ' + default_val if is_workout else '💤 Rest'}"
+        label = f"{workout_date.strftime('%a %b %d')}\n{'🟢 ' + default_val if is_workout else '💤 Rest'}"
         with cols[i]:
             st.markdown(f"<div style='background-color:{color}; padding:4px; border-radius:6px;'>", unsafe_allow_html=True)
             if st.button(label, key=f"btn_{w}_{day}"):
                 st.session_state.selected_workout = default_val
                 st.session_state.selected_date_key = date_key
             st.markdown("</div>", unsafe_allow_html=True)
+
 if st.session_state.selected_workout and st.session_state.selected_date_key:
     wk_name = st.session_state.selected_workout
     date_key = st.session_state.selected_date_key
@@ -87,26 +104,26 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
                 st.markdown(f"### {section}")
                 for ex in exs:
                     st.markdown(f"- **{ex['name']}**: {ex['sets']} x {ex['reps']}")
-            # Completion toggle
             completed_val = progress.get(date_key) == True or (isinstance(progress.get(date_key), dict) and progress[date_key].get('completed'))
             if st.checkbox("✅ Mark as completed", value=completed_val):
                 progress[date_key] = True
             else:
                 progress.pop(date_key, None)
             save_json("./data/progress.json", progress)
-            # Reschedule section
             if wk_name.startswith("Training"):
-                edit_date = st.date_input("📅 New Start Date for Rescheduling", value=base_date)
+                edit_date = st.date_input("📅 New Training Date", value=base_date)
                 if st.button("🔁 Reschedule from this workout"):
                     future_dates = recalculate_schedule(date_key, edit_date, workout_schedule, weekdays)
                     for k, v in future_dates.items():
-                        if k != date_key:
+                        if k == date_key:
+                            progress[k] = {'planned': edit_date.strftime('%Y-%m-%d'), 'completed': True}
+                        else:
                             progress[k] = {'planned': v}
                     save_json("./data/progress.json", progress)
                     st.success("Future workouts rescheduled.")
             note_key = f"note_{date_key}"
             note = st.text_area("📝 Notes", value=notes.get(note_key, ""))
-            if st.button("💾 Save Notes"):
+            if st.button("💾 Save Training"):
                 notes[note_key] = note
                 save_json("./data/notes.json", notes)
                 st.success("Notes saved!")
