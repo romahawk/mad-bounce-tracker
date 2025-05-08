@@ -1,6 +1,6 @@
 import streamlit as st
 import datetime
-from persistence import load_json, save_json, reset_progress, reset_schedule, reset_notes
+from persistence import load_json, save_json, reset_progress, reset_schedule, reset_notes, load_start_date, save_start_date, reset_start_date
 from reschedule_utils import recalculate_schedule
 
 IS_DEV = True
@@ -20,18 +20,30 @@ workout_schedule = load_json("./data/schedule.json") or program_data.get("schedu
 notes = load_json("./data/notes.json") or {}
 save_json("./data/schedule.json", workout_schedule)
 
-# Determine persistent start date from first completed workout
+# Load start date from persistent storage
 if "start_date" not in st.session_state or st.session_state.start_date is None:
-    for key in sorted(progress.keys()):
-        val = progress[key]
-        if isinstance(val, dict) and val.get("completed") and val.get("date"):
-            st.session_state.start_date = datetime.datetime.strptime(val["date"], "%Y-%m-%d").date()
-            break
+    saved_start_date = load_start_date()
+    if saved_start_date:
+        st.session_state.start_date = datetime.datetime.strptime(saved_start_date, "%Y-%m-%d").date()
     else:
-        st.session_state.start_date = datetime.date.today()
+        st.session_state.start_date = datetime.date(2025, 5, 9)  # Default to a fixed date if none saved
 
-st.session_state.start_date = st.date_input("📅 Select Start Date (First Completed Workout)", value=st.session_state.start_date)
-base_date = st.session_state.start_date
+# Display and save start date
+with st.sidebar:
+    st.markdown("### 📅 Start Date (First Completed Workout)")
+    saved_start_date = load_start_date()
+    disabled = saved_start_date is not None
+    current_start_date = st.date_input("", value=st.session_state.start_date, disabled=disabled, key="start_date_input")
+    if not disabled:
+        if st.button("💾 Save Start Date"):
+            save_start_date(current_start_date.strftime("%Y-%m-%d"))
+            st.session_state.start_date = current_start_date
+            st.success("Start date saved!")
+    else:
+        st.warning("Start date is already set. Use 🔄 Reset All to change it.")
+    st.info("This workout defines your training calendar start. To reset it, use 🔄 Reset All.")
+
+st.session_state.start_date = st.session_state.start_date  # Lock start date after saving
 
 st.markdown("<h1 style='font-size: 36px; color: #1e3799;'>🚀 Mad Bounce Vertical Jump Program</h1>", unsafe_allow_html=True)
 completed = len([v for v in progress.values() if v == True or (isinstance(v, dict) and v.get('completed'))])
@@ -65,10 +77,11 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.button("⬅️ Prev", on_click=lambda: st.session_state.update(current_page=max(1, current_page - 1)))
 with col2:
-    st.button("🔄 Reset All", on_click=lambda: (reset_progress(), reset_schedule(), reset_notes()))
+    st.button("🔄 Reset All", on_click=lambda: (reset_progress(), reset_schedule(), reset_notes(), reset_start_date()))
 with col3:
     st.button("➡️ Next", on_click=lambda: st.session_state.update(current_page=min(len(pages), current_page + 1)))
 
+base_date = st.session_state.start_date
 for w in page_weeks:
     st.subheader(f"📅 {w.replace('_', ' ').title()}")
     cols = st.columns(7)
@@ -105,22 +118,11 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
                 for ex in exs:
                     st.markdown(f"- **{ex['name']}**: {ex['sets']} x {ex['reps']}")
             completed_val = progress.get(date_key) == True or (isinstance(progress.get(date_key), dict) and progress[date_key].get('completed'))
-            if st.checkbox("✅ Mark as completed", value=completed_val):
+            if st.checkbox("✅ Mark as completed", value=completed_val, key="completion_checkbox"):
                 progress[date_key] = True
             else:
                 progress.pop(date_key, None)
             save_json("./data/progress.json", progress)
-            if wk_name.startswith("Training"):
-                edit_date = st.date_input("📅 New Training Date", value=base_date)
-                if st.button("🔁 Reschedule from this workout"):
-                    future_dates = recalculate_schedule(date_key, edit_date, workout_schedule, weekdays)
-                    for k, v in future_dates.items():
-                        if k == date_key:
-                            progress[k] = {'planned': edit_date.strftime('%Y-%m-%d'), 'completed': True}
-                        else:
-                            progress[k] = {'planned': v}
-                    save_json("./data/progress.json", progress)
-                    st.success("Future workouts rescheduled.")
             note_key = f"note_{date_key}"
             note = st.text_area("📝 Notes", value=notes.get(note_key, ""))
             if st.button("💾 Save Training"):
