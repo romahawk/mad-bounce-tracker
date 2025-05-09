@@ -46,7 +46,7 @@ with st.sidebar:
 st.session_state.start_date = st.session_state.start_date  # Lock start date after saving
 
 st.markdown("<h1 style='font-size: 36px; color: #1e3799;'>🚀 Mad Bounce Vertical Jump Program</h1>", unsafe_allow_html=True)
-completed = len([v for v in progress.values() if v == True or (isinstance(v, dict) and v.get('completed'))])
+completed = len([v for v in progress.values() if isinstance(v, dict) and v.get('completed')])
 total_workouts = 34
 progress_percent = round((completed / total_workouts) * 100)
 st.markdown(f"""
@@ -89,8 +89,8 @@ for w in page_weeks:
         default_val = workout_schedule.get(w, {}).get(day, "Rest")
         date_key = f"{w}_{day}"
         is_workout = default_val.startswith("Training")
-        val = progress.get(date_key)
-        is_completed = val == True or (isinstance(val, dict) and val.get('completed'))
+        val = progress.get(date_key, {})
+        is_completed = isinstance(val, dict) and val.get('completed', False)
         if isinstance(val, dict) and "planned" in val:
             workout_date = datetime.datetime.strptime(val["planned"], "%Y-%m-%d").date()
         else:
@@ -117,12 +117,38 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
                 st.markdown(f"### {section}")
                 for ex in exs:
                     st.markdown(f"- **{ex['name']}**: {ex['sets']} x {ex['reps']}")
-            completed_val = progress.get(date_key) == True or (isinstance(progress.get(date_key), dict) and progress[date_key].get('completed'))
+            completed_val = progress.get(date_key, {}).get('completed', False)
             if st.checkbox("✅ Mark as completed", value=completed_val, key="completion_checkbox"):
-                progress[date_key] = True
+                # Store as a dictionary with 'completed' and 'planned' keys
+                planned_date = progress.get(date_key, {}).get('planned', base_date.strftime('%Y-%m-%d'))
+                progress[date_key] = {'completed': True, 'planned': planned_date}
+                # Auto-reschedule future workouts
+                future_dates = recalculate_schedule(date_key, datetime.datetime.strptime(planned_date, "%Y-%m-%d").date(), workout_schedule, weekdays)
+                for k, v in future_dates.items():
+                    if k != date_key:  # Skip the current workout
+                        current_status = progress.get(k, {}).get('completed', False)
+                        progress[k] = {'planned': v, 'completed': current_status}
+                save_json("./data/progress.json", progress)
+                st.success("Workout marked as completed and future dates rescheduled.")
             else:
-                progress.pop(date_key, None)
-            save_json("./data/progress.json", progress)
+                # If unchecked, preserve the planned date if it exists
+                planned_date = progress.get(date_key, {}).get('planned', base_date.strftime('%Y-%m-%d'))
+                progress[date_key] = {'completed': False, 'planned': planned_date}
+                save_json("./data/progress.json", progress)
+            if wk_name.startswith("Training"):
+                # Enable date input for rescheduling
+                current_date = base_date if not progress.get(date_key, {}).get("planned") else datetime.datetime.strptime(progress[date_key]["planned"], "%Y-%m-%d").date()
+                edit_date = st.date_input("📅 New Training Date", value=current_date, key=f"date_{date_key}")
+                if st.button("🔁 Reschedule from this workout", key=f"reschedule_{date_key}"):
+                    future_dates = recalculate_schedule(date_key, edit_date, workout_schedule, weekdays)
+                    for k, v in future_dates.items():
+                        if k == date_key:
+                            progress[k] = {'planned': edit_date.strftime('%Y-%m-%d'), 'completed': progress.get(date_key, {}).get('completed', False)}
+                        else:
+                            current_status = progress.get(k, {}).get('completed', False)
+                            progress[k] = {'planned': v, 'completed': current_status}
+                    save_json("./data/progress.json", progress)
+                    st.success("Future workouts rescheduled.")
             note_key = f"note_{date_key}"
             note = st.text_area("📝 Notes", value=notes.get(note_key, ""))
             if st.button("💾 Save Training"):
