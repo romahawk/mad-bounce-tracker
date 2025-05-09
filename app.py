@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime
 from persistence import load_json, save_json, reset_progress, reset_schedule, reset_notes, load_start_date, save_start_date, reset_start_date
-from reschedule_utils import recalculate_schedule
+from reschedule_utils import recalculate_schedule, get_training_day_sequence
 
 IS_DEV = True
 
@@ -20,13 +20,24 @@ workout_schedule = load_json("./data/schedule.json") or program_data.get("schedu
 notes = load_json("./data/notes.json") or {}
 save_json("./data/schedule.json", workout_schedule)
 
+# Initialize planned dates for all training days if not set
+base_date = datetime.date(2025, 5, 9)  # Default base date
+if not progress:
+    # Get the first training day key as base_key
+    sequence = get_training_day_sequence(workout_schedule, ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+    base_key = sequence[0][0] if sequence else next(iter(workout_schedule.keys())) + "_Monday"  # Fallback if sequence is empty
+    initial_dates = recalculate_schedule(base_key, base_date, workout_schedule, ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+    for key, date in initial_dates.items():
+        progress[key] = {'completed': False, 'planned': date}
+    save_json("./data/progress.json", progress)
+
 # Load start date from persistent storage
 if "start_date" not in st.session_state or st.session_state.start_date is None:
     saved_start_date = load_start_date()
     if saved_start_date:
         st.session_state.start_date = datetime.datetime.strptime(saved_start_date, "%Y-%m-%d").date()
     else:
-        st.session_state.start_date = datetime.date(2025, 5, 9)  # Default to a fixed date if none saved
+        st.session_state.start_date = base_date
 
 # Display and save start date
 with st.sidebar:
@@ -38,10 +49,17 @@ with st.sidebar:
         if st.button("💾 Save Start Date"):
             save_start_date(current_start_date.strftime("%Y-%m-%d"))
             st.session_state.start_date = current_start_date
-            st.success("Start date saved!")
+            # Update all planned dates based on new start date
+            sequence = get_training_day_sequence(workout_schedule, ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+            base_key = sequence[0][0] if sequence else next(iter(workout_schedule.keys())) + "_Monday"
+            updated_dates = recalculate_schedule(base_key, current_start_date, workout_schedule, ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], progress)
+            for key, date in updated_dates.items():
+                current_status = progress.get(key, {}).get('completed', False)
+                progress[key] = {'planned': date, 'completed': current_status}
+            save_json("./data/progress.json", progress)
+            st.success("Start date saved and calendar updated!")
     else:
-        st.warning("Start date is already set. Use 🔄 Reset All to change it.")
-    st.info("This workout defines your training calendar start. To reset it, use 🔄 Reset All.")
+        st.markdown("Start date is set and defines your training calendar. Use 🔄 Reset All to change it.")
 
 st.session_state.start_date = st.session_state.start_date  # Lock start date after saving
 
@@ -58,6 +76,9 @@ st.markdown(f"""
       {completed} of {total_workouts} ({progress_percent}%)
     </div>
   </div>
+  <div style='text-align: center; font-size: 16px; font-weight: 500; color: #2ecc71; margin-top: 8px;'>
+    Keep pushing—your jump is getting higher every day! 🚀
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -69,18 +90,69 @@ if "selected_date_key" not in st.session_state:
     st.session_state.selected_date_key = None
 weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 week_keys = sorted([w for w in program_data['workouts']], key=lambda x: int(x.split('_')[1]))
-pages = [week_keys[i:i+2] for i in range(0, len(week_keys), 2)]
+pages = [week_keys[i:i+3] for i in range(0, len(week_keys), 3)]
 current_page = st.session_state.current_page
 page_weeks = pages[current_page - 1]
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.button("⬅️ Prev", on_click=lambda: st.session_state.update(current_page=max(1, current_page - 1)))
-with col2:
-    st.button("🔄 Reset All", on_click=lambda: (reset_progress(), reset_schedule(), reset_notes(), reset_start_date()))
-with col3:
-    st.button("➡️ Next", on_click=lambda: st.session_state.update(current_page=min(len(pages), current_page + 1)))
+# Pagination
+# Custom CSS for hover effect, button styling, and full-width alignment
+st.markdown("""
+<style>
+.button-container {
+    border-radius: 12px;
+    padding: 4px 0; /* Reduced vertical padding */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100vw; /* Full viewport width */
+    position: relative;
+    left: 0;
+    margin-left: calc(-50vw + 50%); /* Center within viewport */
+}
+.button-wrapper button {
+    padding: 4px 10px; /* Reduced vertical padding */
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%; /* Ensure buttons take full width of their column */
+}
+.button-wrapper button:hover:not(:disabled) {
+    background-color: #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.button-wrapper button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+</style>
+""", unsafe_allow_html=True)
 
+# Button layout using a container div
+st.markdown('<div class="button-container">', unsafe_allow_html=True)
+
+# Use st.columns to create a horizontal layout
+col1, col2, col3 = st.columns([1, 1, 1])  # Equal widths for each button
+
+with col1:
+    st.markdown('<div class="button-wrapper">', unsafe_allow_html=True)
+    st.button("⬅️ Prev", on_click=lambda: st.session_state.update(current_page=max(1, current_page - 1)), disabled=current_page == 1)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col2:
+    st.markdown('<div class="button-wrapper">', unsafe_allow_html=True)
+    st.button("🔄 Reset All", on_click=lambda: (reset_progress(), reset_schedule(), reset_notes(), reset_start_date(), st.session_state.update(current_page=1)))
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col3:
+    st.markdown('<div class="button-wrapper">', unsafe_allow_html=True)
+    st.button("➡️ Next", on_click=lambda: st.session_state.update(current_page=min(len(pages), current_page + 1)), disabled=current_page == len(pages))
+    st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Base date for workout scheduling
 base_date = st.session_state.start_date
 for w in page_weeks:
     st.subheader(f"📅 {w.replace('_', ' ').title()}")
@@ -123,7 +195,7 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
                 planned_date = progress.get(date_key, {}).get('planned', base_date.strftime('%Y-%m-%d'))
                 progress[date_key] = {'completed': True, 'planned': planned_date}
                 # Auto-reschedule future workouts
-                future_dates = recalculate_schedule(date_key, datetime.datetime.strptime(planned_date, "%Y-%m-%d").date(), workout_schedule, weekdays)
+                future_dates = recalculate_schedule(date_key, datetime.datetime.strptime(planned_date, "%Y-%m-%d").date(), workout_schedule, weekdays, progress)
                 for k, v in future_dates.items():
                     if k != date_key:  # Skip the current workout
                         current_status = progress.get(k, {}).get('completed', False)
@@ -140,7 +212,7 @@ if st.session_state.selected_workout and st.session_state.selected_date_key:
                 current_date = base_date if not progress.get(date_key, {}).get("planned") else datetime.datetime.strptime(progress[date_key]["planned"], "%Y-%m-%d").date()
                 edit_date = st.date_input("📅 New Training Date", value=current_date, key=f"date_{date_key}")
                 if st.button("🔁 Reschedule from this workout", key=f"reschedule_{date_key}"):
-                    future_dates = recalculate_schedule(date_key, edit_date, workout_schedule, weekdays)
+                    future_dates = recalculate_schedule(date_key, edit_date, workout_schedule, weekdays, progress)
                     for k, v in future_dates.items():
                         if k == date_key:
                             progress[k] = {'planned': edit_date.strftime('%Y-%m-%d'), 'completed': progress.get(date_key, {}).get('completed', False)}
