@@ -8,16 +8,16 @@
         "planned": "2025-05-05"
     },
     "week_1_Friday": {
-        "planned": "2025-05-09",
-        "completed": false
+        "completed": true,
+        "planned": "2025-05-09"
     },
     "week_1_Sunday": {
-        "planned": "2025-05-11",
-        "completed": false
+        "completed": true,
+        "planned": "2025-05-11"
     },
     "week_2_Tuesday": {
-        "planned": "2025-05-13",
-        "completed": false
+        "completed": true,
+        "planned": "2025-05-13"
     },
     "week_2_Thursday": {
         "planned": "2025-05-15",
