@@ -20,16 +20,16 @@
         "planned": "2025-05-13"
     },
     "week_2_Thursday": {
-        "planned": "2025-05-15",
-        "completed": false
+        "completed": false,
+        "planned": "2025-05-15"
     },
     "week_2_Saturday": {
-        "planned": "2025-05-17",
-        "completed": false
+        "completed": false,
+        "planned": "2025-05-17"
     },
     "week_3_Monday": {
-        "planned": "2025-05-19",
-        "completed": false
+        "completed": false,
+        "planned": "2025-05-19"
     },
     "week_3_Thursday": {
         "planned": "2025-05-22",
