@@ -1,0 +1,130 @@
+{
+    "week_1_Wednesday": {
+        "planned": "2025-05-07",
+        "completed": true
+    },
+    "week_1_Monday": {
+        "completed": true,
+        "planned": "2025-05-05"
+    },
+    "week_1_Friday": {
+        "completed": true,
+        "planned": "2025-05-09"
+    },
+    "week_1_Sunday": {
+        "completed": true,
+        "planned": "2025-05-11"
+    },
+    "week_2_Tuesday": {
+        "completed": true,
+        "planned": "2025-05-13"
+    },
+    "week_2_Thursday": {
+        "completed": false,
+        "planned": "2025-05-15"
+    },
+    "week_2_Saturday": {
+        "completed": false,
+        "planned": "2025-05-17"
+    },
+    "week_3_Monday": {
+        "completed": false,
+        "planned": "2025-05-19"
+    },
+    "week_3_Thursday": {
+        "planned": "2025-05-22",
+        "completed": false
+    },
+    "week_3_Saturday": {
+        "planned": "2025-05-24",
+        "completed": false
+    },
+    "week_4_Monday": {
+        "planned": "2025-05-26",
+        "completed": false
+    },
+    "week_4_Thursday": {
+        "planned": "2025-05-29",
+        "completed": false
+    },
+    "week_4_Sunday": {
+        "planned": "2025-06-01",
+        "completed": false
+    },
+    "week_5_Monday": {
+        "planned": "2025-06-02",
+        "completed": false
+    },
+    "week_5_Thursday": {
+        "planned": "2025-06-05",
+        "completed": false
+    },
+    "week_5_Saturday": {
+        "planned": "2025-06-07",
+        "completed": false
+    },
+    "week_6_Tuesday": {
+        "planned": "2025-06-10",
+        "completed": false
+    },
+    "week_6_Thursday": {
+        "planned": "2025-06-12",
+        "completed": false
+    },
+    "week_7_Saturday": {
+        "planned": "2025-06-21",
+        "completed": false
+    },
+    "week_7_Sunday": {
+        "planned": "2025-06-22",
+        "completed": false
+    },
+    "week_8_Monday": {
+        "planned": "2025-06-23",
+        "completed": false
+    },
+    "week_8_Wednesday": {
+        "planned": "2025-06-25",
+        "completed": false
+    },
+    "week_8_Sunday": {
+        "planned": "2025-06-29",
+        "completed": false
+    },
+    "week_10_Monday": {
+        "planned": "2025-07-07",
+        "completed": false
+    },
+    "week_10_Friday": {
+        "planned": "2025-07-11",
+        "completed": false
+    },
+    "week_11_Monday": {
+        "planned": "2025-07-14",
+        "completed": false
+    },
+    "week_11_Sunday": {
+        "planned": "2025-07-20",
+        "completed": false
+    },
+    "week_12_Friday": {
+        "planned": "2025-07-25",
+        "completed": false
+    },
+    "week_13_Wednesday": {
+        "planned": "2025-07-30",
+        "completed": false
+    },
+    "week_14_Wednesday": {
+        "planned": "2025-08-06",
+        "completed": false
+    },
+    "week_14_Friday": {
+        "planned": "2025-08-08",
+        "completed": false
+    },
+    "week_14_Sunday": {
+        "planned": "2025-08-10",
+        "completed": false
+    }
+}
